@@ -1,0 +1,14 @@
+target/
+bin/
+.superpowers/
+pg_volume*
+grafana_volume/*
+!grafana_volume/datasources.yaml
+prometheus_volume/*
+!prometheus_volume/prometheus.yml
+.env
+.idea
+.vscode
+.DS_Store
+*.heap
+k6-results/
