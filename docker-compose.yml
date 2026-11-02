@@ -1,0 +1,76 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?задайте DB_PASSWORD в окружении или в .env (см. README)}
+      POSTGRES_DB: demo
+    volumes:
+      - ./pg_volume/volumes/postgres:/var/lib/postgresql/data # папка контейнера -> папка на хосте
+    ports:
+      - "5435:5432" # 5435, чтобы не конфликтовать с Go-шаблоном (5434) и другими локальными postgres
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $${POSTGRES_DB}
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+  jaeger:
+    image: jaegertracing/all-in-one:1.61.0
+    ports:
+      - "16687:16686" # http://localhost:16687 Jaeger UI
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus_volume:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "127.0.0.1:3001:3000"
+    volumes:
+      - ./grafana_volume/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./grafana_volume:/var/lib/grafana
+    environment:
+      # Локальная Grafana без пароля: анонимный вход с ролью Admin, порт открыт только на 127.0.0.1.
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    restart: unless-stopped
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
+    ports:
+      - "9001:8000"
+    environment:
+      DEBUG: ${DEBUG:-false}
+      DB_PASSWORD: ${DB_PASSWORD:?задайте DB_PASSWORD в окружении или в .env (см. README)}
+      ENV_NAME: ${ENV_NAME}
+      # профиль кучи jemalloc, например: prof:true,prof_active:true,lg_prof_sample:19
+      _RJEM_MALLOC_CONF: ${MALLOC_CONF:-}
+    deploy:
+      resources:
+        limits:
+          memory: 256M # абсолютное ограничение по использованию памяти в контейнере
+    depends_on:
+      postgres:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
+  integration-tests:
+    build:
+      context: .
+      dockerfile: integration-tests/Dockerfile
+    depends_on:
+      app:
+        condition: service_started
+    environment:
+      - HOST=app
+      - PORT=8000

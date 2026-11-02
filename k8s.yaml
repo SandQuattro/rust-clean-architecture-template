@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  DB_HOST: "host.docker.internal"
+  DB_PORT: "5433"
+  DB_USER: "postgres"
+  DB_NAME: "demo"
+  APP_NAME: "clean-arch-template"
+  HTTP_PORT: "9000"
+---
+# Secret app-secrets (ключ DB_PASSWORD) в репозитории не хранится. Для Minikube его создаёт
+# `make k8s-deploy` из переменной окружения DB_PASSWORD; в проде используйте External Secrets,
+# Sealed Secrets или Vault.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clean-arch-template
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clean-arch-template
+  template:
+    metadata:
+      labels:
+        app: clean-arch-template
+    spec:
+      containers:
+      - name: clean-arch-template
+        image: rust-clean-arch-template:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 9000
+        envFrom:
+        - configMapRef:
+            name: app-config
+        - secretRef:
+            name: app-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clean-arch-template
+spec:
+  type: NodePort
+  ports:
+  - port: 9000
+    targetPort: 9000
+    nodePort: 30000
+  selector:
+    app: clean-arch-template

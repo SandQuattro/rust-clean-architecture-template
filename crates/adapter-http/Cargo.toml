@@ -1,0 +1,31 @@
+[package]
+name = "adapter-http"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+domain = { path = "../domain" }
+axum = { workspace = true, features = ["json", "tokio", "http1"] }
+aide = { workspace = true, features = ["scalar"] }
+garde.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_path_to_error.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+mockall.workspace = true
+tokio = { workspace = true, features = ["macros", "rt"] }
+tower = { workspace = true, features = ["util"] }
+tracing-subscriber.workspace = true
+
+[[bench]]
+name = "users_with_orders"
+harness = false
+
+[lints]
+workspace = true
