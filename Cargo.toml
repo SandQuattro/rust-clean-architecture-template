@@ -1,0 +1,53 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "integration-tests"]
+default-members = ["crates/*"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.99"
+publish = false
+
+[workspace.dependencies]
+thiserror = "2.0.21"
+mockall = "0.15.0"
+tokio = "1.54.1"
+tokio-util = "0.7.20"
+axum = { version = "0.8.9", default-features = false }
+hyper = { version = "1.12.0", default-features = false }
+hyper-util = { version = "0.1.21", default-features = false }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1"
+serde_path_to_error = "0.1"
+garde = { version = "0.23.0", features = ["derive"] }
+aide = { version = "0.15.1", features = ["axum", "axum-json"] }
+schemars = "0.9"
+config = { version = "0.15.27", default-features = false, features = ["toml", "json"] }
+sqlx = { version = "0.9.0", default-features = false, features = ["runtime-tokio", "postgres", "tls-rustls-ring-native-roots"] }
+tracing = "0.1.44"
+tracing-subscriber = "0.3.23"
+opentelemetry = { version = "0.33.1", default-features = false }
+opentelemetry_sdk = { version = "0.33.1", default-features = false }
+opentelemetry-otlp = { version = "0.33.1", default-features = false }
+tracing-opentelemetry = { version = "0.34.0", default-features = false }
+metrics = "0.24.6"
+metrics-exporter-prometheus = { version = "0.18.3", default-features = false }
+metrics-process = "2.4.3"
+tikv-jemallocator = "0.7.0"
+tikv-jemalloc-ctl = "0.7.0"
+tower = "0.5.3"
+tower-http = { version = "0.7.1", default-features = false }
+axum-tracing-opentelemetry = { version = "0.42.1", default-features = false }
+jemalloc_pprof = { version = "0.9.0", default-features = false, features = ["symbolize"] }
+reqwest = { version = "0.13.5", default-features = false }
+criterion = "0.8.2"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+dbg_macro = "deny"
+todo = "deny"

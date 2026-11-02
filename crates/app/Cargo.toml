@@ -1,0 +1,58 @@
+[package]
+name = "app"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lib]
+name = "app"
+path = "src/lib.rs"
+
+[[bin]]
+name = "clean-arch-template"
+path = "src/main.rs"
+
+[dependencies]
+adapter-http = { path = "../adapter-http" }
+adapter-postgres = { path = "../adapter-postgres" }
+domain = { path = "../domain" }
+axum = { workspace = true, features = ["tokio", "http1", "matched-path"] }
+hyper = { workspace = true, features = ["server", "http1"] }
+hyper-util = { workspace = true, features = ["tokio"] }
+axum-tracing-opentelemetry = { workspace = true, features = ["tracing_level_info"] }
+tower = { workspace = true, features = ["limit", "load-shed", "timeout", "util"] }
+tower-http = { workspace = true, features = ["catch-panic", "timeout"] }
+config.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+tracing-subscriber = { workspace = true, features = ["json"] }
+opentelemetry = { workspace = true, features = ["trace"] }
+opentelemetry_sdk = { workspace = true, features = ["trace"] }
+opentelemetry-otlp = { workspace = true, features = ["trace", "grpc-tonic", "internal-logs"] }
+tracing-opentelemetry.workspace = true
+metrics.workspace = true
+metrics-exporter-prometheus.workspace = true
+metrics-process.workspace = true
+sqlx = { workspace = true, features = ["migrate"] }
+tokio = { workspace = true, features = ["time", "macros", "net", "rt-multi-thread", "signal", "sync"] }
+tokio-util.workspace = true
+
+[target.'cfg(not(target_env = "msvc"))'.dependencies]
+tikv-jemallocator.workspace = true
+tikv-jemalloc-ctl = { workspace = true, features = ["stats"] }
+
+# Профиль кучи (`/debug/pprof/heap`): jemalloc_pprof работает только в Linux и
+# требует jemalloc, собранный с `--enable-prof` (фича `profiling`).
+[target.'cfg(target_os = "linux")'.dependencies]
+jemalloc_pprof.workspace = true
+tikv-jemallocator = { workspace = true, features = ["profiling"] }
+
+[dev-dependencies]
+reqwest = { workspace = true, features = ["json"] }
+serde_json.workspace = true
+sqlx = { workspace = true, features = ["macros", "migrate"] }
+tokio = { workspace = true, features = ["macros", "rt", "rt-multi-thread", "sync"] }
+
+[lints]
+workspace = true
